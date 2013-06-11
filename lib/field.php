@@ -3,7 +3,6 @@
 namespace Kirby\Form;
 
 use Kirby\Toolkit\A;
-use Kirby\Toolkit\Content;
 use Kirby\Toolkit\Str;
 use Kirby\Form\Field\Buttons;
 
@@ -264,9 +263,9 @@ class Field {
 
     if(!file_exists($file)) raise('The field template could not be found: ' . $file);
 
-    content::start();  
+    Kirby\Toolkit\Content::start();  
     require($file);
-    return content::stop();      
+    return Kirby\Toolkit\Content::stop();      
 
   }
 
