@@ -36,17 +36,16 @@ class Buttons extends Fieldset {
 
     $options = array_merge($defaults, $params);
     $fields  = array();
-
-    // add the csfr token field
-    $fields[] = \Kirby\Toolkit\Form::csfr();
     
     // add the cancel button
-    if($options['cancel']) $fields[] = \Kirby\Toolkit\Form::reset('cancel', $options['cancel']);
+    if($options['cancel']) $fields[] = \Kirby\Toolkit\Form::button(false, $options['cancel'], array('class' => 'form-button is-reset'));
     
     // add the submit button
-    if($options['submit']) $fields[] = \Kirby\Toolkit\Form::submit('submit', $options['submit']);
+    if($options['submit']) $fields[] = \Kirby\Toolkit\Form::button(false, $options['submit'], array('class' => 'form-button is-submit'));
 
-    parent::__construct($fields);
+    parent::__construct($fields, array(
+      'class' => 'form-fieldset is-buttonbar'
+    ));
 
   }
 

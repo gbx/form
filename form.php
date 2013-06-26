@@ -85,6 +85,7 @@ class Form extends \Kirby\Toolkit\Form {
       'errors'  => array(),
       'buttons' => array(),
       'notice'  => false,
+      'csfr'    => true
     );
   }
 
@@ -160,6 +161,7 @@ class Form extends \Kirby\Toolkit\Form {
       $this->notice($this->options['notice']),
       $this->content(),
       $this->buttons($this->options['buttons']),
+      ($this->options['csfr']) ? $this->csfr() : false,
       $this->end()
     ));
 
