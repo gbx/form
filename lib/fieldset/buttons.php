@@ -41,12 +41,14 @@ class Buttons extends Fieldset {
     $fields[] = \Kirby\Toolkit\Form::csfr();
     
     // add the cancel button
-    if($options['cancel']) $fields[] = \Kirby\Toolkit\Form::reset('cancel', $options['cancel']);
+    if($options['cancel']) $fields[] = \Kirby\Toolkit\Form::button('cancel', $options['cancel'], array('class' => 'form-button is-reset'));
     
     // add the submit button
-    if($options['submit']) $fields[] = \Kirby\Toolkit\Form::submit('submit', $options['submit']);
+    if($options['submit']) $fields[] = \Kirby\Toolkit\Form::button('submit', $options['submit'], array('class' => 'form-button is-submit'));
 
-    parent::__construct($fields);
+    parent::__construct($fields, array(
+      'class' => 'form-fieldset is-buttonbar'
+    ));
 
   }
 

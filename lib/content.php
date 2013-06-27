@@ -80,10 +80,10 @@ class Content {
             $class = 'Kirby\\Form\\Field\\' . $field['type'];
             
             // add the name to the field
-            $field['name'] = $name;
+            $field['name'] = $name;            
 
             // add the data value to the field and pass the default value if exists
-            $field['value'] = a::get($this->form->data(), $name, @$field['default']);
+            $field['value'] = (string)a::get($this->form->data(), $name, @$field['default']);
 
             // add the error if exists
             $field['error'] = in_array($name, $this->form->errors());

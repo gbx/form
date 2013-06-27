@@ -121,6 +121,7 @@ class Field {
    * @return string
    */
   public function label() {
+    if(empty($this->attributes['label'])) return false;
     return '<label class="' . $this->selector('label') . '" for="' . $this->id() . '">' . $this->attributes['label'] . $this->hint() . '</label>';
   }
 
