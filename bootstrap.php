@@ -16,6 +16,9 @@
 // check for an existing toolkit
 if(!defined('KIRBY_TOOLKIT_ROOT')) die('The Kirby Toolkit is required for the Form Builder plugin');
 
+// avoid loading it twice
+if(defined('KIRBY_FORM_ROOT')) return;
+
 // define the current location of the form builder plugin
 define('KIRBY_FORM_ROOT',     __DIR__);
 define('KIRBY_FORM_ROOT_LIB', KIRBY_FORM_ROOT . DS . 'lib');
