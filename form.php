@@ -76,6 +76,7 @@ class Form extends \Kirby\Toolkit\Form {
    */
   public function defaults() {
     return array(
+      'id'      => null,
       'action'  => null,
       'method'  => 'POST',
       'upload'  => false,
@@ -149,7 +150,10 @@ class Form extends \Kirby\Toolkit\Form {
   public function html() {
 
     // make sure the class name is attached to the attr array
-    $this->options['attr'] = array_merge($this->options['attr'], array('class' => $this->options['class']));
+    $this->options['attr'] = array_merge($this->options['attr'], array(
+      'id'    => $this->options['id'],
+      'class' => $this->options['class']
+    ));
 
     return implode('', array(
       $this->start(
