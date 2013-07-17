@@ -36,12 +36,12 @@ class Buttons extends Fieldset {
 
     $options = array_merge($defaults, $params);
     $fields  = array();
-    
-    // add the cancel button
-    if($options['cancel']) $fields[] = \Kirby\Toolkit\Form::button(false, $options['cancel'], array('class' => 'form-button is-reset'));
-    
+        
     // add the submit button
     if($options['submit']) $fields[] = \Kirby\Toolkit\Form::button(false, $options['submit'], array('class' => 'form-button is-submit'));
+
+    // add the cancel button
+    if($options['cancel']) $fields[] = \Kirby\Toolkit\Form::button('__cancel', $options['cancel'], array('class' => 'form-button is-reset'));
 
     parent::__construct($fields, array(
       'class' => 'form-fieldset is-buttonbar'

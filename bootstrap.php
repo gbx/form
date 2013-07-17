@@ -68,5 +68,8 @@ $autoloader->namespace = 'Kirby\\Form\\Field';
 // start autoloading
 $autoloader->start();
 
+// start a session if not already started
+s::start();
+
 // load the form class
 require_once(KIRBY_FORM_ROOT . DS . 'form.php');

@@ -35,6 +35,12 @@ class Field {
    */
   public function __construct($attributes = array()) {
     $this->attributes = array_merge($this->defaults(), $attributes);
+  
+    // overwrite the hint if an error is available
+    if(!empty($this->attributes['error'])) {
+      $this->attributes['hint'] = $this->attributes['error'];
+    }
+
   }
 
   /**

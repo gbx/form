@@ -83,10 +83,10 @@ class Content {
             $field['name'] = $name;            
 
             // add the data value to the field and pass the default value if exists
-            $field['value'] = (string)a::get($this->form->data(), $name, @$field['default']);
+            $field['value'] = (string)$this->form->data($name, @$field['default']);
 
             // add the error if exists
-            $field['error'] = in_array($name, $this->form->errors());
+            $field['error'] = $this->form->error($name);
 
             // add the global form class to the field
             $field['class'] = $this->form->options['class'] . '-field';

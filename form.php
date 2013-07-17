@@ -4,6 +4,8 @@ namespace Kirby;
 
 use Kirby\Toolkit\A;
 use Kirby\Toolkit\L;
+use Kirby\Toolkit\R;
+use Kirby\Toolkit\S;
 use Kirby\Form\Content;
 use Kirby\Form\Fieldset\Buttons;
 use Kirby\Form\Notice;
@@ -22,51 +24,35 @@ if(!defined('KIRBY')) die('Direct access is not allowed');
  */
 class Form extends \Kirby\Toolkit\Form {
 
+  // holds the entire field definition
+  public $fields = array();
+
+  // holds all options for the form
+  public $options = array();
+
   // holds all default data for the form
   protected $data = array();
   
   // holds all field names with errors
   protected $errors = array();
-  
-  // holds the content html from the Content object
-  protected $content = null;
-  
-  // holds all options for the form
-  public $options = array();
-
+    
   /**
    * Constructor
    * 
    * @param array $content
    * @param array $params
    */
-  public function __construct($content = array(), $params = array()) {
+  public function __construct($fields = array(), $params = array()) {
     
-    // if there's only a single object passed as content, 
+    // if there's only a single object passed as fields, 
     // make sure to wrap it in an array to make everything else work smoothly.
-    if(is_object($content)) $content = array($content);
+    if(is_object($fields)) $fields = array($fields);
 
+    $this->fields  = $fields;
     $this->options = array_merge($this->defaults(), $params);
-    $this->data    = $this->options['data'];
+    $this->data    = array_merge($this->options['data'], r::get());
     $this->errors  = $this->options['errors'];
     
-    // check if everything needs to be wrapped with a fieldset
-    // you can avoid this by wrapping everything in fieldsets yourself
-    if($first = a::first($content)) {
-      if(is_array($first) && $first['type'] != 'fieldset') {
-        $content = array(
-          'fieldset' => array(
-            'type'   => 'fieldset',
-            'fields' => $content
-          )
-        );
-      }
-    }
-
-    // create the content object, which will take care of converting 
-    // the array with field setups to proper field/fieldset/columns objects
-    $this->content = new Content($content, $this);
-  
   }
 
   /**
@@ -86,7 +72,11 @@ class Form extends \Kirby\Toolkit\Form {
       'errors'  => array(),
       'buttons' => array(),
       'notice'  => false,
-      'csfr'    => true
+      'csfr'    => true, 
+      'on'      => array(
+        'submit' => function() {},
+        'cancel' => function() {}
+      )
     );
   }
 
@@ -100,12 +90,66 @@ class Form extends \Kirby\Toolkit\Form {
   }
 
   /**
+   * Returns a specific error for a certain field
+   * 
+   * @param string $key The name of the field
+   * @return string
+   */
+  public function error($key) {
+    return @$this->errors[$key];
+  }
+
+  /**
+   * Raise an error for a certain field
+   * 
+   * @param string $key
+   * @param string $message
+   */
+  public function raise($key, $message = null) {
+
+    // you can pass an entire model and traverse all the errors at once
+    if(is_a($key, 'Kirby\\Toolkit\\Model')) {
+      $this->errors = $key->errors();
+
+    // auto-pass all errors from a validation object
+    } else if(is_a($key, 'Kirby\\Toolkit\\Validation')) {
+      foreach($key->errors() as $k => $error) {
+        $this->errors[$k] = $error->message();
+      }
+
+    // pass an entire array of errors and merge it with existing errors
+    } else if(is_array($key)) {
+      $this->errors = array_merge($this->errors, $key);
+    
+    // add a single error
+    } else if(!is_null($message)) {
+      $this->errors[$key] = $message;
+    }
+      
+  }
+
+
+  /**
    * Returns the entire data array
    * 
    * @return array
    */
-  public function data() {
-    return $this->data;
+  public function data($key = null, $default = null) {
+
+    // always remove the csfr token first
+    unset($this->data['csfr']);
+
+    if(is_null($key)) return $this->data;    
+    // return an array of keys
+    if(is_array($key)) {        
+      $cleaned = array();
+      // only add wanted elements to the cleaned array
+      foreach($key as $k) $cleaned[$k] = @$this->data[$k];
+      return $cleaned;
+    }
+    
+    return a::get($this->data, $key, $default);
+  
   }
 
   /**
@@ -124,12 +168,55 @@ class Form extends \Kirby\Toolkit\Form {
   }
 
   /**
+   * Shortcut to set an error notice for the form
+   * 
+   * @param string $message
+   */
+  public function alert($message, $attr = array()) {
+    $this->options['notice'] = array(
+      'type'    => 'error', 
+      'message' => $message,
+      'attr'    => $attr
+    );
+  }
+
+  /**
+   * Shortcut to set a success notice for the form
+   * 
+   * @param string $message
+   */
+  public function notify($message, $attr = array()) {
+    $this->options['notice'] = array(
+      'type'    => 'success', 
+      'message' => $message, 
+      'attr'    => $attr
+    );
+  }
+
+  /**
    * Returns the content object for the form
    * 
    * @return object Kirby\Form\Content
    */
   public function content() {
-    return $this->content; 
+
+    // check if everything needs to be wrapped with a fieldset
+    // you can avoid this by wrapping everything in fieldsets yourself
+    if($first = a::first($this->fields)) {
+      if(is_array($first) && $first['type'] != 'fieldset') {
+        $this->fields = array(
+          'fieldset' => array(
+            'type'   => 'fieldset',
+            'fields' => $this->fields
+          )
+        );
+      }
+    }
+
+    // create the content object, which will take care of converting 
+    // the array with field setups to proper field/fieldset/columns objects
+    return new Content($this->fields, $this);
+
   }
 
   /**
@@ -148,6 +235,9 @@ class Form extends \Kirby\Toolkit\Form {
    * @return string
    */
   public function html() {
+
+    // trigger attached events before the html is generated
+    $this->events();    
 
     // make sure the class name is attached to the attr array
     $this->options['attr'] = array_merge($this->options['attr'], array(
@@ -168,6 +258,55 @@ class Form extends \Kirby\Toolkit\Form {
       ($this->options['csfr']) ? $this->csfr() : false,
       $this->end()
     ));
+
+  }
+
+  /**
+   * Registers a form event
+   * Allowed events: submit and cancel
+   * 
+   * @param string $type 'submit' or 'cancel'
+   * @param closure $event The event method
+   */
+  public function on($type, $event) {
+    if(!in_array($type, array('submit', 'cancel'))) raise('Invalid event: ' . $type);
+    $this->options['on'][$type] = $event;
+  }
+
+  /**
+   * Trigger an attached event
+   * 
+   * @param string $type
+   */
+  public function trigger($type) {
+    if(!in_array($type, array('submit', 'cancel'))) raise('Invalid event: ' . $type);
+
+    // call the event
+    if(is_callable($this->options['on'][$type])) {      
+      return $this->options['on'][$type]($this);
+    }
+
+  }
+
+  /**
+   * Event handler for the attached submit and cancel events
+   * 
+   */
+  protected function events() {
+
+    // check for a valid submission
+    if(r::method() == $this->options['method'] and !empty($this->data)) {
+
+      // check for a valid csfr token
+      if($this->options['csfr'] and !csfr($this->data['csfr'])) return false; 
+    
+      // get the right event, which should be triggered
+      $event = (isset($this->data['__cancel'])) ? 'cancel' : 'submit';
+
+      // trigger the appropriate event
+      $this->trigger($event);
+
+    }
 
   }
 
