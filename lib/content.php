@@ -83,7 +83,7 @@ class Content {
             $field['name'] = $name;            
 
             // add the data value to the field and pass the default value if exists
-            $field['value'] = (string)$this->form->data($name, @$field['default']);
+            $field['value'] = (string)$this->form->data($name, a::get($field, 'default'));
 
             // add the error if exists
             $field['error'] = $this->form->error($name);
@@ -123,7 +123,7 @@ class Content {
    * @return string
    */
   public function __toString() {  
-    return $this->html();
+    return (string)$this->html();
   }
 
 }

@@ -3,6 +3,7 @@
 namespace Kirby;
 
 use Kirby\Toolkit\A;
+use Kirby\Toolkit\Errors;
 use Kirby\Toolkit\L;
 use Kirby\Toolkit\R;
 use Kirby\Toolkit\S;
@@ -51,7 +52,7 @@ class Form extends \Kirby\Toolkit\Form {
     $this->fields  = $fields;
     $this->options = array_merge($this->defaults(), $params);
     $this->data    = array_merge($this->options['data'], r::get());
-    $this->errors  = $this->options['errors'];
+    $this->errors  = new Errors;
     
   }
 
@@ -69,7 +70,6 @@ class Form extends \Kirby\Toolkit\Form {
       'class'   => 'form',
       'attr'    => array(),
       'data'    => array(),
-      'errors'  => array(),
       'buttons' => array(),
       'notice'  => false,
       'csfr'    => true, 
@@ -92,42 +92,22 @@ class Form extends \Kirby\Toolkit\Form {
   /**
    * Returns a specific error for a certain field
    * 
-   * @param string $key The name of the field
+   * @param string $code The name of the field
    * @return string
    */
-  public function error($key) {
-    return @$this->errors[$key];
+  public function error($code = null) {
+    return is_null($code) ? $this->errors->first() : $this->errors->get($code);
   }
 
   /**
    * Raise an error for a certain field
    * 
-   * @param string $key
    * @param string $message
+   * @param string $code
    */
-  public function raise($key, $message = null) {
-
-    // you can pass an entire model and traverse all the errors at once
-    if(is_a($key, 'Kirby\\Toolkit\\Model')) {
-      $this->errors = $key->errors();
-
-    // auto-pass all errors from a validation object
-    } else if(is_a($key, 'Kirby\\Toolkit\\Validation')) {
-      foreach($key->errors() as $k => $error) {
-        $this->errors[$k] = $error->message();
-      }
-
-    // pass an entire array of errors and merge it with existing errors
-    } else if(is_array($key)) {
-      $this->errors = array_merge($this->errors, $key);
-    
-    // add a single error
-    } else if(!is_null($message)) {
-      $this->errors[$key] = $message;
-    }
-      
+  public function raise($message, $code = null) {
+    $this->errors()->raise($message, $code);      
   }
-
 
   /**
    * Returns the entire data array
@@ -246,7 +226,7 @@ class Form extends \Kirby\Toolkit\Form {
     ));
 
     return implode('', array(
-      $this->start(
+        $this->start(
         $this->options['action'], 
         $this->options['method'], 
         $this->options['upload'], 
@@ -315,8 +295,8 @@ class Form extends \Kirby\Toolkit\Form {
    * 
    * @return string
    */
-  public function __toString() {
-    return $this->html();
+  public function __toString() {    
+    return (string)$this->html();
   }
 
 }

@@ -38,7 +38,7 @@ class Field {
   
     // overwrite the hint if an error is available
     if(!empty($this->attributes['error'])) {
-      $this->attributes['hint'] = $this->attributes['error'];
+      $this->attributes['hint'] = (string)$this->attributes['error'];
     }
 
   }
