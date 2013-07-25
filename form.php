@@ -51,7 +51,7 @@ class Form extends \Kirby\Toolkit\Form {
 
     $this->fields  = $fields;
     $this->options = array_merge($this->defaults(), $params);
-    $this->data    = array_merge($this->options['data'], r::get());
+    $this->data    = array_merge((array)$this->options['data'], r::get());
     $this->errors  = new Errors;
     
   }

@@ -86,6 +86,9 @@ class Buttons {
    * @return array Return all installed buttons
    */
   static public function add($key, $value = null) {
+
+    if(empty(self::$installed)) self::load();
+
     if(is_array($key)) {
       foreach($key as $k => $v) self::add($k, $v);
       return true;
@@ -134,7 +137,7 @@ class Buttons {
    * 
    * @return array
    */
-  protected function load() {
+  static protected function load() {
 
     // load the default buttons
     f::load(KIRBY_FORM_ROOT_DEFAULT_BUTTONS . DS . 'buttons.php');
